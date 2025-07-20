@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dynamic Rainfall Simulator (0-50mm)</title>
+    <title>Rainfall Simulator</title>
     <style>
         * {
             margin: 0;
@@ -13,137 +13,172 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, 
+                #2c3e50 0%, 
+                #34495e 25%, 
+                #4a6741 50%, 
+                #5d6d5b 75%, 
+                #708090 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
+            background-attachment: fixed;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, 
+                rgba(255, 255, 255, 0.05) 0%, 
+                rgba(0, 0, 0, 0.1) 100%);
+            z-index: -1;
         }
 
         .container {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            padding: 40px;
-            max-width: 600px;
+            background: linear-gradient(145deg, 
+                rgba(255, 255, 255, 0.98) 0%, 
+                rgba(248, 250, 252, 0.95) 50%, 
+                rgba(241, 245, 249, 0.92) 100%);
+            border-radius: 24px;
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.15),
+                0 12px 24px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            padding: 50px;
+            max-width: 900px;
             width: 100%;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         h1 {
             text-align: center;
-            color: #333;
-            margin-bottom: 30px;
-            font-size: 2.5rem;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #1e293b;
+            margin-bottom: 40px;
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1e293b, #475569, #64748b);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            letter-spacing: -0.02em;
         }
 
         .slider-container {
-            margin: 40px 0;
+            margin: 50px 0;
             position: relative;
+            padding: 25px;
+            background: linear-gradient(135deg, 
+                rgba(248, 250, 252, 0.8) 0%, 
+                rgba(241, 245, 249, 0.6) 100%);
+            border-radius: 16px;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            box-shadow: 
+                0 4px 12px rgba(0, 0, 0, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
         }
 
         .slider-label {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 15px;
-            font-size: 1.1rem;
-            color: #555;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            color: #334155;
             font-weight: 600;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
         }
 
         .slider {
             width: 100%;
-            height: 8px;
-            border-radius: 4px;
-            background: linear-gradient(to right, #e0e7ff, #3b82f6);
+            height: 12px;
+            border-radius: 6px;
+            background: linear-gradient(to right, 
+                #e2e8f0 0%, 
+                #cbd5e1 25%, 
+                #94a3b8 50%, 
+                #64748b 75%, 
+                #475569 100%);
             outline: none;
             appearance: none;
             cursor: pointer;
             transition: all 0.3s ease;
+            box-shadow: 
+                inset 0 2px 4px rgba(0, 0, 0, 0.1),
+                0 1px 2px rgba(255, 255, 255, 0.8);
         }
 
         .slider::-webkit-slider-thumb {
             appearance: none;
-            width: 24px;
-            height: 24px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #1e293b, #334155);
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            box-shadow: 
+                0 4px 12px rgba(30, 41, 59, 0.3),
+                0 2px 4px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
             transition: all 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.9);
         }
 
         .slider::-webkit-slider-thumb:hover {
             transform: scale(1.1);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+            box-shadow: 
+                0 6px 20px rgba(30, 41, 59, 0.4),
+                0 4px 8px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
         }
 
         .slider::-moz-range-thumb {
-            width: 24px;
-            height: 24px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #1e293b, #334155);
             cursor: pointer;
-            border: none;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-        }
-
-        .controls-section {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
-            padding: 20px;
-            border-radius: 12px;
-            margin: 20px 0;
-            border: 2px solid rgba(59, 130, 246, 0.1);
-        }
-
-        .sound-controls {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .sound-btn {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-            color: white;
-            border: none;
-            padding: 12px 18px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-        }
-
-        .sound-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
-        }
-
-        .sound-btn.disabled {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: 2px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 
+                0 4px 12px rgba(30, 41, 59, 0.3),
+                0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         .rainfall-visual {
             text-align: center;
-            margin: 30px 0;
-            padding: 30px;
-            background-image: url('https://user-gen-media-assets.s3.amazonaws.com/gpt4o_images/1f9237f6-b18e-4d94-84d1-4ad5593aed09.png');
+            margin: 40px 0;
+            padding: 40px;
+            background-image: url('https://user-gen-media-assets.s3.amazonaws.com/gpt4o_images/56be8633-1f80-43a4-88dd-405e94827781.png');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            border-radius: 15px;
+            border-radius: 20px;
             position: relative;
             overflow: hidden;
-            height: 280px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.1);
+            height: 400px;
+            border: 2px solid rgba(148, 163, 184, 0.3);
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.12),
+                0 8px 16px rgba(0, 0, 0, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .rainfall-visual::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, 
+                rgba(0, 0, 0, 0.02) 0%, 
+                rgba(0, 0, 0, 0.05) 100%);
+            z-index: 1;
         }
 
         .rainfall-container {
@@ -153,6 +188,7 @@
             width: 100%;
             height: 100%;
             pointer-events: none;
+            z-index: 2;
         }
 
         .raindrop {
@@ -170,7 +206,7 @@
 
         @keyframes fall-realistic {
             from {
-                transform: rotate(12deg) translateY(-50px);
+                transform: rotate(12deg) translateY(-60px);
                 opacity: 0;
             }
             3% {
@@ -180,93 +216,93 @@
                 opacity: 0.7;
             }
             to {
-                transform: rotate(12deg) translateY(330px);
+                transform: rotate(12deg) translateY(460px);
                 opacity: 0;
             }
         }
 
         .intensity-indicator {
             position: absolute;
-            bottom: 10px;
+            bottom: 15px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(255, 255, 255, 0.92);
-            padding: 10px 18px;
-            border-radius: 25px;
-            font-size: 1rem;
-            color: #333;
-            font-weight: 600;
-            backdrop-filter: blur(8px);
-            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .info-box {
-            background: linear-gradient(135deg, #fff3e0, #ffe0b2);
-            border-radius: 12px;
-            padding: 20px;
-            margin-top: 25px;
-            border-left: 4px solid #ff9800;
-        }
-
-        .info-box h3 {
-            color: #e65100;
-            margin-bottom: 10px;
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.95) 0%, 
+                rgba(248, 250, 252, 0.92) 100%);
+            padding: 12px 24px;
+            border-radius: 30px;
             font-size: 1.2rem;
+            color: #1e293b;
+            font-weight: 600;
+            backdrop-filter: blur(12px);
+            box-shadow: 
+                0 8px 24px rgba(0, 0, 0, 0.12),
+                0 4px 8px rgba(0, 0, 0, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            z-index: 3;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
         }
 
-        .info-box p {
-            color: #bf360c;
-            line-height: 1.5;
-            margin: 0;
+        @media (max-width: 800px) {
+            .container {
+                padding: 30px;
+                margin: 10px;
+                max-width: 95%;
+            }
+            
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .slider-label {
+                font-size: 1.1rem;
+            }
+
+            .rainfall-visual {
+                height: 320px;
+            }
+
+            .intensity-indicator {
+                font-size: 1rem;
+                padding: 10px 18px;
+            }
         }
 
-        @media (max-width: 600px) {
+        @media (max-width: 500px) {
             .container {
                 padding: 25px;
-                margin: 10px;
             }
             
             h1 {
                 font-size: 2rem;
             }
 
-            .intensity-indicator {
-                font-size: 0.9rem;
-                padding: 8px 14px;
+            .rainfall-visual {
+                height: 280px;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🌧️ Pure Rainfall Simulator</h1>
+        <h1>🌧️ Rainfall Simulator</h1>
         
         <div class="slider-container">
             <div class="slider-label">
-                <span>Rainfall Rate:</span>
+                <span>Rainfall Intensity:</span>
                 <span id="intensityDisplay">5 mm/hr</span>
             </div>
             <input type="range" min="0" max="50" value="5" class="slider" id="intensitySlider">
             <div class="slider-label">
                 <span>0 mm/hr (Silent)</span>
-                <span>50 mm/hr (Loud Storm)</span>
-            </div>
-        </div>
-
-        <div class="controls-section">
-            <div class="sound-controls">
-                <button class="sound-btn" id="soundToggle">🔇 Disable Rain Sounds</button>
+                <span>50 mm/hr (Storm)</span>
             </div>
         </div>
 
         <div class="rainfall-visual">
             <div class="rainfall-container" id="rainfallContainer"></div>
             <div class="intensity-indicator" id="intensityIndicator">Light rain</div>
-        </div>
-
-        <div class="info-box">
-            <h3>🌧️ Minimalist Rain Experience</h3>
-            <p id="infoText">Clean rainfall simulation with left-leaning thin white droplets and dynamic audio. Focus purely on the immersive rain experience.</p>
         </div>
     </div>
 
@@ -275,12 +311,8 @@
         const intensityDisplay = document.getElementById('intensityDisplay');
         const rainfallContainer = document.getElementById('rainfallContainer');
         const intensityIndicator = document.getElementById('intensityIndicator');
-        const infoText = document.getElementById('infoText');
-        
-        const soundToggle = document.getElementById('soundToggle');
         
         let rainfallInterval;
-        let isSoundEnabled = true;
         let audioContext;
         let rainSource;
         let gainNode;
@@ -350,7 +382,7 @@
 
         function getStreakLength(intensity, velocity) {
             if (intensity === 0) return 0;
-            const baseLength = Math.max(10, velocity * 2.5);
+            const baseLength = Math.max(12, velocity * 3);
             const intensityFactor = Math.min(2, 1 + intensity / 30);
             return Math.floor(baseLength * intensityFactor * 1.5);
         }
@@ -399,7 +431,7 @@
             drop.style.width = streakWidth + 'px';
             drop.style.height = streakLength + 'px';
             
-            const baseDuration = Math.max(0.12, 180 / (velocity * 35));
+            const baseDuration = Math.max(0.15, 220 / (velocity * 35));
             const fallDuration = baseDuration * 0.8;
             
             drop.style.animation = `fall-realistic ${fallDuration}s linear`;
@@ -417,12 +449,12 @@
 
         function getBaseDropFrequency(intensity) {
             if (intensity === 0) return Infinity;
-            if (intensity <= 1) return 200;
-            else if (intensity <= 2) return 120;
-            else if (intensity <= 5) return 60;
-            else if (intensity <= 15) return 35;
-            else if (intensity <= 30) return 25;
-            else return 15;
+            if (intensity <= 1) return 160;
+            else if (intensity <= 2) return 100;
+            else if (intensity <= 5) return 50;
+            else if (intensity <= 15) return 28;
+            else if (intensity <= 30) return 20;
+            else return 12;
         }
 
         function startRainfall() {
@@ -448,32 +480,13 @@
             return "Violent Rain";
         }
 
-        function getRainfallDescription(intensity) {
-            if (intensity === 0) {
-                return "Clear skies - peaceful silence with no precipitation. Pure focus on the serene garden view.";
-            } else if (intensity <= 2) {
-                return `Very light drizzle creates gentle whispers with barely visible left-leaning droplets.`;
-            } else if (intensity <= 5) {
-                return `Light rain provides soft ambient sounds with delicate angled white streaks.`;
-            } else if (intensity <= 15) {
-                return `Moderate rain delivers steady rhythmic audio with natural left-tilted droplet patterns.`;
-            } else if (intensity <= 30) {
-                return `Heavy rainfall creates rich immersive soundscapes with pronounced angled rain streaks.`;
-            } else {
-                return `Violent storm produces powerful audio intensity with dramatic left-tilted rainfall.`;
-            }
-        }
-
         function updateDisplay() {
             const intensity = parseFloat(slider.value);
             
             intensityDisplay.textContent = intensity + ' mm/hr';
             intensityIndicator.textContent = getRainfallClassification(intensity);
-            infoText.textContent = getRainfallDescription(intensity);
             
-            if (isSoundEnabled) {
-                createDynamicRainSound(intensity);
-            }
+            createDynamicRainSound(intensity);
             
             if (intensity > 0) {
                 startRainfall();
@@ -487,45 +500,12 @@
         slider.addEventListener('input', updateDisplay);
         slider.addEventListener('change', updateDisplay);
 
-        soundToggle.addEventListener('click', function() {
-            if (isSoundEnabled) {
-                if (rainSource) {
-                    rainSource.stop();
-                    rainSource = null;
-                }
-                this.textContent = '🔊 Enable Rain Sounds';
-                this.classList.add('disabled');
-                this.classList.remove('sound-btn');
-                isSoundEnabled = false;
-            } else {
-                try {
-                    if (!audioContext) {
-                        initializeAdvancedAudio();
-                    }
-                    if (audioContext.state === 'suspended') {
-                        audioContext.resume();
-                    }
-                    this.textContent = '🔇 Disable Rain Sounds';
-                    this.classList.remove('disabled');
-                    this.classList.add('sound-btn');
-                    isSoundEnabled = true;
-                    
-                    const intensity = parseFloat(slider.value);
-                    createDynamicRainSound(intensity);
-                } catch (error) {
-                    console.log('Audio initialization failed:', error);
-                    this.textContent = '🔊 Audio Error';
-                }
-            }
-            updateDisplay();
-        });
-
         document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => {
                 try {
                     initializeAdvancedAudio();
                 } catch (error) {
-                    console.log('Auto-audio init failed, waiting for user interaction');
+                    console.log('Auto-audio init failed, will try on interaction');
                 }
             }, 1000);
         });
@@ -534,7 +514,7 @@
 
         let hasStartedAudio = false;
         function tryStartAudio() {
-            if (!hasStartedAudio && isSoundEnabled) {
+            if (!hasStartedAudio) {
                 try {
                     if (!audioContext) {
                         initializeAdvancedAudio();
@@ -552,7 +532,6 @@
         }
 
         slider.addEventListener('input', tryStartAudio);
-        soundToggle.addEventListener('click', tryStartAudio);
 
         rainfallContainer.addEventListener('mouseenter', function() {
             if (rainfallInterval) {
