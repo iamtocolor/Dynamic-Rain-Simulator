@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Rainfall Simulator (0-50mm)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .slider-container {
+            margin: 40px 0;
+            position: relative;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            color: #555;
+            font-weight: 600;
+        }
+
+        .slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: linear-gradient(to right, #e0e7ff, #3b82f6);
+            outline: none;
+            appearance: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .slider::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .slider::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .controls-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border: 2px solid rgba(59, 130, 246, 0.1);
+        }
+
+        .sound-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .sound-btn {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .sound-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        }
+
+        .sound-btn.disabled {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .rainfall-visual {
+            text-align: center;
+            margin: 30px 0;
+            padding: 30px;
+            background-image: url('https://user-gen-media-assets.s3.amazonaws.com/gpt4o_images/1f9237f6-b18e-4d94-84d1-4ad5593aed09.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+            height: 280px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .rainfall-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .raindrop {
+            position: absolute;
+            background: linear-gradient(180deg, 
+                rgba(255, 255, 255, 0.9) 0%, 
+                rgba(255, 255, 255, 0.8) 50%, 
+                rgba(255, 255, 255, 0.6) 100%);
+            border-radius: 1px;
+            opacity: 0.7;
+            transform: rotate(12deg);
+            transform-origin: center;
+            box-shadow: 0 0 1px rgba(255, 255, 255, 0.5);
+        }
+
+        @keyframes fall-realistic {
+            from {
+                transform: rotate(12deg) translateY(-50px);
+                opacity: 0;
+            }
+            3% {
+                opacity: 0.7;
+            }
+            97% {
+                opacity: 0.7;
+            }
+            to {
+                transform: rotate(12deg) translateY(330px);
+                opacity: 0;
+            }
+        }
+
+        .intensity-indicator {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.92);
+            padding: 10px 18px;
+            border-radius: 25px;
+            font-size: 1rem;
+            color: #333;
+            font-weight: 600;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 25px;
+            border-left: 4px solid #ff9800;
+        }
+
+        .info-box h3 {
+            color: #e65100;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .info-box p {
+            color: #bf360c;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 25px;
+                margin: 10px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+
+            .intensity-indicator {
+                font-size: 0.9rem;
+                padding: 8px 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌧️ Pure Rainfall Simulator</h1>
+        
+        <div class="slider-container">
+            <div class="slider-label">
+                <span>Rainfall Rate:</span>
+                <span id="intensityDisplay">5 mm/hr</span>
+            </div>
+            <input type="range" min="0" max="50" value="5" class="slider" id="intensitySlider">
+            <div class="slider-label">
+                <span>0 mm/hr (Silent)</span>
+                <span>50 mm/hr (Loud Storm)</span>
+            </div>
+        </div>
+
+        <div class="controls-section">
+            <div class="sound-controls">
+                <button class="sound-btn" id="soundToggle">🔇 Disable Rain Sounds</button>
+            </div>
+        </div>
+
+        <div class="rainfall-visual">
+            <div class="rainfall-container" id="rainfallContainer"></div>
+            <div class="intensity-indicator" id="intensityIndicator">Light rain</div>
+        </div>
+
+        <div class="info-box">
+            <h3>🌧️ Minimalist Rain Experience</h3>
+            <p id="infoText">Clean rainfall simulation with left-leaning thin white droplets and dynamic audio. Focus purely on the immersive rain experience.</p>
+        </div>
+    </div>
+
+    <script>
+        const slider = document.getElementById('intensitySlider');
+        const intensityDisplay = document.getElementById('intensityDisplay');
+        const rainfallContainer = document.getElementById('rainfallContainer');
+        const intensityIndicator = document.getElementById('intensityIndicator');
+        const infoText = document.getElementById('infoText');
+        
+        const soundToggle = document.getElementById('soundToggle');
+        
+        let rainfallInterval;
+        let isSoundEnabled = true;
+        let audioContext;
+        let rainSource;
+        let gainNode;
+        let filterNode;
+
+        function initializeAdvancedAudio() {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
+            gainNode = audioContext.createGain();
+            filterNode = audioContext.createBiquadFilter();
+            
+            filterNode.type = 'lowpass';
+            filterNode.frequency.setValueAtTime(2000, audioContext.currentTime);
+            filterNode.Q.setValueAtTime(0.5, audioContext.currentTime);
+            
+            filterNode.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+        }
+
+        function createDynamicRainSound(intensity) {
+            if (!audioContext) return;
+            
+            if (rainSource) {
+                rainSource.stop();
+                rainSource = null;
+            }
+            
+            if (intensity === 0) return;
+            
+            const bufferSize = audioContext.sampleRate * 2;
+            const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+            const output = buffer.getChannelData(0);
+            
+            const noiseIntensity = Math.min(1, intensity / 50);
+            const dropFrequency = Math.max(0.1, intensity / 50);
+            
+            for (let i = 0; i < bufferSize; i++) {
+                let noise = (Math.random() * 2 - 1) * noiseIntensity * 0.3;
+                
+                if (Math.random() < dropFrequency * 0.01) {
+                    noise += (Math.random() * 2 - 1) * 0.4 * noiseIntensity;
+                }
+                
+                output[i] = noise;
+            }
+            
+            for (let i = 1; i < bufferSize; i++) {
+                const filterStrength = 0.1 + (intensity / 50) * 0.3;
+                output[i] = output[i] * (1 - filterStrength) + output[i-1] * filterStrength;
+            }
+            
+            rainSource = audioContext.createBufferSource();
+            rainSource.buffer = buffer;
+            rainSource.loop = true;
+            
+            const cutoffFreq = 800 + (intensity / 50) * 3200;
+            filterNode.frequency.setValueAtTime(cutoffFreq, audioContext.currentTime);
+            
+            const volume = Math.pow(intensity / 50, 0.7) * 0.8;
+            gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
+            
+            rainSource.connect(filterNode);
+            rainSource.start(0);
+        }
+
+        function getStreakLength(intensity, velocity) {
+            if (intensity === 0) return 0;
+            const baseLength = Math.max(10, velocity * 2.5);
+            const intensityFactor = Math.min(2, 1 + intensity / 30);
+            return Math.floor(baseLength * intensityFactor * 1.5);
+        }
+
+        function getDropSizeRange(intensity) {
+            if (intensity === 0) return { min: 0, max: 0 };
+            
+            let ranges;
+            if (intensity <= 2) ranges = { min: 0.5, max: 1.5 };
+            else if (intensity <= 10) ranges = { min: 1.0, max: 3.0 };
+            else if (intensity <= 30) ranges = { min: 1.5, max: 4.5 };
+            else ranges = { min: 2.0, max: 5.5 };
+
+            ranges.min *= 1.4;
+            ranges.max *= 1.6;
+
+            return ranges;
+        }
+
+        function getTerminalVelocity(diameter) {
+            if (diameter <= 1.0) return 4.0;
+            if (diameter <= 2.0) return 4.0 + (diameter - 1.0) * 2.5;
+            if (diameter <= 3.0) return 6.5 + (diameter - 2.0) * 1.0;
+            if (diameter <= 4.0) return 7.5 + (diameter - 3.0) * 0.8;
+            return 8.3 + (diameter - 4.0) * 0.3;
+        }
+
+        function createRaindrop() {
+            const intensity = parseFloat(slider.value);
+            if (intensity === 0) return;
+
+            const drop = document.createElement('div');
+            drop.className = 'raindrop';
+            
+            const sizeRange = getDropSizeRange(intensity);
+            
+            const leftPercent = Math.random() * 100;
+            drop.style.left = leftPercent + '%';
+            
+            const dropDiameter = sizeRange.min + Math.random() * (sizeRange.max - sizeRange.min);
+            const velocity = getTerminalVelocity(dropDiameter);
+            
+            const streakLength = getStreakLength(intensity, velocity);
+            const streakWidth = Math.max(0.5, Math.min(2, dropDiameter / 3));
+            
+            drop.style.width = streakWidth + 'px';
+            drop.style.height = streakLength + 'px';
+            
+            const baseDuration = Math.max(0.12, 180 / (velocity * 35));
+            const fallDuration = baseDuration * 0.8;
+            
+            drop.style.animation = `fall-realistic ${fallDuration}s linear`;
+            
+            rainfallContainer.appendChild(drop);
+            
+            const cleanupDelay = fallDuration * 1000;
+            
+            setTimeout(() => {
+                if (drop.parentNode) {
+                    drop.parentNode.removeChild(drop);
+                }
+            }, cleanupDelay);
+        }
+
+        function getBaseDropFrequency(intensity) {
+            if (intensity === 0) return Infinity;
+            if (intensity <= 1) return 200;
+            else if (intensity <= 2) return 120;
+            else if (intensity <= 5) return 60;
+            else if (intensity <= 15) return 35;
+            else if (intensity <= 30) return 25;
+            else return 15;
+        }
+
+        function startRainfall() {
+            if (rainfallInterval) {
+                clearInterval(rainfallInterval);
+            }
+            
+            const intensity = parseFloat(slider.value);
+            if (intensity === 0) return;
+            
+            const baseFrequency = getBaseDropFrequency(intensity);
+            const frequency = baseFrequency * 0.6;
+            const randomizedFrequency = frequency * (0.7 + Math.random() * 0.6);
+            
+            rainfallInterval = setInterval(createRaindrop, randomizedFrequency);
+        }
+
+        function getRainfallClassification(intensity) {
+            if (intensity === 0) return "No Rain";
+            if (intensity <= 2.5) return "Light Rain";
+            if (intensity <= 10) return "Moderate Rain";
+            if (intensity <= 25) return "Heavy Rain";
+            return "Violent Rain";
+        }
+
+        function getRainfallDescription(intensity) {
+            if (intensity === 0) {
+                return "Clear skies - peaceful silence with no precipitation. Pure focus on the serene garden view.";
+            } else if (intensity <= 2) {
+                return `Very light drizzle creates gentle whispers with barely visible left-leaning droplets.`;
+            } else if (intensity <= 5) {
+                return `Light rain provides soft ambient sounds with delicate angled white streaks.`;
+            } else if (intensity <= 15) {
+                return `Moderate rain delivers steady rhythmic audio with natural left-tilted droplet patterns.`;
+            } else if (intensity <= 30) {
+                return `Heavy rainfall creates rich immersive soundscapes with pronounced angled rain streaks.`;
+            } else {
+                return `Violent storm produces powerful audio intensity with dramatic left-tilted rainfall.`;
+            }
+        }
+
+        function updateDisplay() {
+            const intensity = parseFloat(slider.value);
+            
+            intensityDisplay.textContent = intensity + ' mm/hr';
+            intensityIndicator.textContent = getRainfallClassification(intensity);
+            infoText.textContent = getRainfallDescription(intensity);
+            
+            if (isSoundEnabled) {
+                createDynamicRainSound(intensity);
+            }
+            
+            if (intensity > 0) {
+                startRainfall();
+            } else {
+                if (rainfallInterval) {
+                    clearInterval(rainfallInterval);
+                }
+            }
+        }
+
+        slider.addEventListener('input', updateDisplay);
+        slider.addEventListener('change', updateDisplay);
+
+        soundToggle.addEventListener('click', function() {
+            if (isSoundEnabled) {
+                if (rainSource) {
+                    rainSource.stop();
+                    rainSource = null;
+                }
+                this.textContent = '🔊 Enable Rain Sounds';
+                this.classList.add('disabled');
+                this.classList.remove('sound-btn');
+                isSoundEnabled = false;
+            } else {
+                try {
+                    if (!audioContext) {
+                        initializeAdvancedAudio();
+                    }
+                    if (audioContext.state === 'suspended') {
+                        audioContext.resume();
+                    }
+                    this.textContent = '🔇 Disable Rain Sounds';
+                    this.classList.remove('disabled');
+                    this.classList.add('sound-btn');
+                    isSoundEnabled = true;
+                    
+                    const intensity = parseFloat(slider.value);
+                    createDynamicRainSound(intensity);
+                } catch (error) {
+                    console.log('Audio initialization failed:', error);
+                    this.textContent = '🔊 Audio Error';
+                }
+            }
+            updateDisplay();
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                try {
+                    initializeAdvancedAudio();
+                } catch (error) {
+                    console.log('Auto-audio init failed, waiting for user interaction');
+                }
+            }, 1000);
+        });
+
+        updateDisplay();
+
+        let hasStartedAudio = false;
+        function tryStartAudio() {
+            if (!hasStartedAudio && isSoundEnabled) {
+                try {
+                    if (!audioContext) {
+                        initializeAdvancedAudio();
+                    }
+                    if (audioContext.state === 'suspended') {
+                        audioContext.resume();
+                    }
+                    const intensity = parseFloat(slider.value);
+                    createDynamicRainSound(intensity);
+                    hasStartedAudio = true;
+                } catch (error) {
+                    console.log('Audio start failed:', error);
+                }
+            }
+        }
+
+        slider.addEventListener('input', tryStartAudio);
+        soundToggle.addEventListener('click', tryStartAudio);
+
+        rainfallContainer.addEventListener('mouseenter', function() {
+            if (rainfallInterval) {
+                clearInterval(rainfallInterval);
+            }
+        });
+
+        rainfallContainer.addEventListener('mouseleave', function() {
+            const intensity = parseFloat(slider.value);
+            if (intensity > 0) {
+                startRainfall();
+            }
+        });
+    </script>
+</body>
+</html>
